@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "assignment_submissions",
+  "info": {
+    "singularName": "assignment-submission",
+    "pluralName": "assignment-submissions",
+    "displayName": "Assignment Submission"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "student": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::student.student",
+      "inversedBy": "assignment_submissions"
+    },
+    "submitted_at": {
+      "type": "datetime"
+    },
+    "class_assignment": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::class-assignment.class-assignment",
+      "inversedBy": "assignment_submissions"
+    },
+    "project": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::project.project",
+      "inversedBy": "assignment_submissions"
+    }
+  }
+}

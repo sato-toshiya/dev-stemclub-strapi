@@ -1,0 +1,73 @@
+{
+  "kind": "collectionType",
+  "collectionName": "projects",
+  "info": {
+    "singularName": "project",
+    "pluralName": "projects",
+    "displayName": "Project"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "string"
+    },
+    "owner_type": {
+      "type": "enumeration",
+      "required": true,
+      "enum": ["teacher", "student"]
+    },
+    "teacher": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::teacher.teacher",
+      "inversedBy": "projects"
+    },
+    "student": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::student.student",
+      "inversedBy": "projects"
+    },
+    "sjr_file": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["files"]
+    },
+    "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "file_size": {
+      "type": "decimal"
+    },
+    "class_assignments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::class-assignment.class-assignment",
+      "mappedBy": "project"
+    },
+    "assignment_submissions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::assignment-submission.assignment-submission",
+      "mappedBy": "project"
+    },
+    "share_token": {
+      "type": "string",
+      "required": false,
+      "unique": true
+    },
+    "share_expires_at": {
+      "type": "datetime"
+    }
+  }
+}

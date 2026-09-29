@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "class_assignments",
+  "info": {
+    "singularName": "class-assignment",
+    "pluralName": "class-assignments",
+    "displayName": "Class Assignment"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "class": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::class.class",
+      "inversedBy": "class_assignments"
+    },
+    "project": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::project.project",
+      "inversedBy": "class_assignments"
+    },
+    "teacher": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::teacher.teacher",
+      "inversedBy": "class_assignments"
+    },
+    "assigned_at": {
+      "type": "datetime"
+    },
+    "assignment_submissions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::assignment-submission.assignment-submission",
+      "mappedBy": "class_assignment"
+    },
+    "assigned_sjr_file": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["files"]
+    },
+    "assigned_title": {
+      "type": "string"
+    },
+    "assigned_thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    }
+  }
+}

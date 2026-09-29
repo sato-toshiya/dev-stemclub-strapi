@@ -1,0 +1,64 @@
+{
+  "kind": "collectionType",
+  "collectionName": "school_admins",
+  "info": {
+    "singularName": "school-admin",
+    "pluralName": "school-admins",
+    "displayName": "School Admin"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "representor": {
+      "type": "string",
+      "required": true
+    },
+    "postal_code": {
+      "type": "string",
+      "required": true
+    },
+    "address": {
+      "type": "string",
+      "required": true
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "name_kana": {
+      "type": "string"
+    },
+    "establishment_date": {
+      "type": "date"
+    },
+    "notes": {
+      "type": "text"
+    },
+    "users_permissions_users": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "school_admin"
+    },
+    "academic_years": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::academic-year.academic-year",
+      "mappedBy": "school_admin"
+    },
+    "teachers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::teacher.teacher",
+      "mappedBy": "school_admin"
+    },
+    "students": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::student.student",
+      "mappedBy": "school_admin"
+    }
+  }
+}

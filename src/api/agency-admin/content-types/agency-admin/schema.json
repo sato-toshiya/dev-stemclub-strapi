@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "agency_admins",
+  "info": {
+    "singularName": "agency-admin",
+    "pluralName": "agency-admins",
+    "displayName": "Agency Admin"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "users_permissions_users": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "plugin::users-permissions.user"
+    },
+    "school_admins": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::school-admin.school-admin"
+    }
+  }
+}

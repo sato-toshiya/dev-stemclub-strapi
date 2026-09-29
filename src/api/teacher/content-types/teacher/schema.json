@@ -1,0 +1,64 @@
+{
+  "kind": "collectionType",
+  "collectionName": "teachers",
+  "info": {
+    "singularName": "teacher",
+    "pluralName": "teachers",
+    "displayName": "Teacher"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "birthday": {
+      "type": "date"
+    },
+    "passcode": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "name_kana": {
+      "type": "string",
+      "required": true
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "classes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::class.class",
+      "mappedBy": "teacher"
+    },
+    "school_admin": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::school-admin.school-admin",
+      "inversedBy": "teachers"
+    },
+    "gender": {
+      "type": "enumeration",
+      "enum": ["male", "female", "other"]
+    },
+    "projects": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::project.project",
+      "mappedBy": "teacher"
+    },
+    "class_assignments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::class-assignment.class-assignment",
+      "mappedBy": "teacher"
+    }
+  }
+}

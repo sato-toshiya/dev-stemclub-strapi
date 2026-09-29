@@ -1,0 +1,101 @@
+{
+  "kind": "collectionType",
+  "collectionName": "students",
+  "info": {
+    "singularName": "student",
+    "pluralName": "students",
+    "displayName": "Student"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "name_kana": {
+      "type": "string",
+      "required": true
+    },
+    "qr_token": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "code": {
+      "type": "string"
+    },
+    "guardian_name": {
+      "type": "string",
+      "required": true
+    },
+    "guardian_phone": {
+      "type": "string",
+      "required": false
+    },
+    "emergency_phone": {
+      "type": "string",
+      "required": false
+    },
+    "address": {
+      "type": "string"
+    },
+    "guardian_email": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "text"
+    },
+    "grade": {
+      "type": "string"
+    },
+    "guardian_relationship": {
+      "type": "enumeration",
+      "enum": ["father", "mother", "grandfather", "grandmother", "other"]
+    },
+    "gender": {
+      "type": "enumeration",
+      "enum": ["male", "female", "other"]
+    },
+    "school_admin": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::school-admin.school-admin",
+      "inversedBy": "students"
+    },
+    "enrollment_date": {
+      "type": "date"
+    },
+    "birthday": {
+      "type": "date"
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "assignment_submissions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::assignment-submission.assignment-submission",
+      "mappedBy": "student"
+    },
+    "class": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::class.class",
+      "inversedBy": "students"
+    },
+    "projects": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::project.project",
+      "mappedBy": "student"
+    },
+    "last_seen_at": {
+      "type": "datetime"
+    }
+  }
+}

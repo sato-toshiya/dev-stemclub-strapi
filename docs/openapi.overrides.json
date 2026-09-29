@@ -1,0 +1,2261 @@
+{
+  "paths": {
+    "/teachers/login-by-passcode": {
+      "post": {
+        "summary": "Login teacher by 6-digit passcode",
+        "description": "Return JWT + teacher + user (without secrets).",
+        "tags": ["teacher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeacherLoginByPasscodeRequest"
+              },
+              "example": {
+                "passcode": "123456"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherLoginByPasscodeResponse"
+                },
+                "example": {
+                  "jwt": "eyJhbGciOi...",
+                  "teacher": {
+                    "id": 34,
+                    "documentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "name": "Nguyen Van A",
+                    "passcode": "123456"
+                  },
+                  "user": {
+                    "id": 12,
+                    "email": "teacher@example.com",
+                    "username": "teacher@example.com",
+                    "phone": "0900000000",
+                    "blocked": false,
+                    "confirmed": true,
+                    "provider": "local"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`passcode` must be 6 digits"
+          },
+          "401": {
+            "description": "Invalid passcode / User is blocked"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/teachers/class-students-presence": {
+      "get": {
+        "summary": "Poll students presence in a class",
+        "description": "Return students in a class with computed presence status based on last_seen_at. Requires teacher JWT.",
+        "tags": ["teacher"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Class documentId",
+              "example": "zig0ji0e5a40vw9uxo1m19e2"
+            },
+            "required": true,
+            "description": "Class documentId",
+            "name": "class",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "description": "Online threshold in seconds (default 120).",
+              "example": 120
+            },
+            "required": false,
+            "description": "Online threshold in seconds (default 120).",
+            "name": "online_threshold",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "description": "Page (1-based).",
+              "example": 1
+            },
+            "required": false,
+            "description": "Page (1-based).",
+            "name": "pagination[page]",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "description": "Page size.",
+              "example": 10
+            },
+            "required": false,
+            "description": "Page size.",
+            "name": "pagination[pageSize]",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherClassStudentsPresenceResponse"
+                },
+                "example": {
+                  "data": [
+                    {
+                      "id": 26,
+                      "documentId": "oqvag31avils00sje3703l7f",
+                      "name": "my full name 211",
+                      "name_kana": "フリガナ",
+                      "last_seen_at": "2026-01-21T02:02:25.361Z",
+                      "last_seen_age_seconds": 2,
+                      "presence_status": "online"
+                    }
+                  ],
+                  "meta": {
+                    "server_time": "2026-01-21T09:02:28.122Z",
+                    "presence": {
+                      "online_threshold_seconds": 120,
+                      "online_count": 1,
+                      "total_count": 3
+                    },
+                    "pagination": {
+                      "page": 1,
+                      "pageSize": 50,
+                      "pageCount": 1,
+                      "total": 3
+                    },
+                    "class": {
+                      "documentId": "zig0ji0e5a40vw9uxo1m19e2",
+                      "name": "class 10"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query (missing/invalid class documentId)"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Not allowed (teacher not linked to class / tenant mismatch)"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/students/login-by-qr": {
+      "post": {
+        "summary": "Login student by QR token",
+        "description": "Accept token (or qr_token). Return JWT + student + user (without secrets).",
+        "tags": ["student"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudentLoginByQrRequest"
+              },
+              "example": {
+                "token": "a5b5750df98fdb069fb70dc556d70813"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentLoginByQrResponse"
+                },
+                "example": {
+                  "jwt": "eyJhbGciOi...",
+                  "student": {
+                    "id": 26,
+                    "documentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "name": "my full name",
+                    "name_kana": "フリガナ",
+                    "qr_token": "a5b5750df98fdb069fb70dc556d70813",
+                    "users_permissions_user": {
+                      "id": 55,
+                      "documentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "email": "student_...@local.invalid",
+                      "phone": null,
+                      "blocked": false
+                    },
+                    "school_admin": {
+                      "id": 29,
+                      "documentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "name": "School Admin 123"
+                    },
+                    "class": {
+                      "id": 63,
+                      "documentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "name": "class 10"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`token` is required"
+          },
+          "401": {
+            "description": "Invalid QR / User is blocked"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/students/mark-seen": {
+      "post": {
+        "summary": "Mark student as recently active (last seen) or offline (best-effort)",
+        "description": "Update student.last_seen_at (throttled by server, e.g. once per 30 seconds). If status=\"offline\", server forces last_seen_at older than threshold so presence becomes offline immediately.",
+        "tags": ["student"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudentMarkSeenRequest"
+              },
+              "example": {
+                "status": "online"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentMarkSeenResponse"
+                },
+                "examples": {
+                  "online": {
+                    "value": {
+                      "updated": true,
+                      "status": "online"
+                    }
+                  },
+                  "offline": {
+                    "value": {
+                      "updated": true,
+                      "status": "offline"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Student not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/classes/my": {
+      "get": {
+        "summary": "List classes of current teacher (active academic year only, paginated)",
+        "description": "Return classes assigned to the currently authenticated teacher, restricted to the tenant's ACTIVE academic year. Supports pagination for infinite scroll. Stop fetching when `page >= meta.pagination.pageCount` or when `data.length === 0`.",
+        "tags": ["class"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Page number (1-based). Default: 1",
+              "example": 1
+            },
+            "required": false,
+            "description": "Page number (1-based). Default: 1",
+            "name": "pagination[page]",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Items per page. Default: 10. Max: 100",
+              "example": 10
+            },
+            "required": false,
+            "description": "Items per page. Default: 10. Max: 100",
+            "name": "pagination[pageSize]",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassMyResponse"
+                },
+                "examples": {
+                  "normal": {
+                    "value": {
+                      "data": [
+                        {
+                          "id": 101,
+                          "documentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                          "name": "Class A",
+                          "academic_year": {
+                            "id": 12,
+                            "documentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "name": "2025年度"
+                          },
+                          "studentsCount": 12
+                        },
+                        {
+                          "id": 102,
+                          "documentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                          "name": "Class B",
+                          "academic_year": {
+                            "id": 12,
+                            "documentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "name": "2025年度"
+                          },
+                          "studentsCount": 0
+                        }
+                      ],
+                      "meta": {
+                        "pagination": {
+                          "page": 1,
+                          "pageSize": 10,
+                          "pageCount": 3,
+                          "total": 55
+                        }
+                      }
+                    }
+                  },
+                  "noActiveAcademicYear": {
+                    "value": {
+                      "data": [],
+                      "meta": {
+                        "pagination": {
+                          "page": 1,
+                          "pageSize": 0,
+                          "pageCount": 0,
+                          "total": 0
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid JWT (unauthorized)"
+          },
+          "403": {
+            "description": "Not allowed (authenticated user is not linked to a teacher record, or teacher has no tenant school_admin link)."
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/projects/upload": {
+      "post": {
+        "summary": "Upload a project (.sjr + optional thumbnail) and create Project record",
+        "description": "Multipart upload endpoint. Server detects owner_type based on authenticated user: teacher -> owner_type=teacher, otherwise student -> owner_type=student. Stores media in S3/localstack via Strapi upload provider.",
+        "tags": ["project"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectUploadMultipart"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectUploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ValidationError (missing title/sjr_file, invalid payload)"
+          },
+          "401": {
+            "description": "Missing/invalid JWT (unauthorized)"
+          },
+          "403": {
+            "description": "Not allowed (user is not linked to teacher/student record)"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/projects/my": {
+      "get": {
+        "summary": "List projects of current user",
+        "description": "Teacher gets teacher-owned projects, student gets student-owned projects. Supports pagination via pagination[page] & pagination[pageSize].",
+        "tags": ["project"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "example": 1,
+              "description": "Page number (>=1). Default 1."
+            },
+            "required": false,
+            "description": "Page number (>=1). Default 1.",
+            "name": "pagination[page]",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "example": 10,
+              "description": "Items per page (1..100). Default 10."
+            },
+            "required": false,
+            "description": "Items per page (1..100). Default 10.",
+            "name": "pagination[pageSize]",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectsMyResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid JWT (unauthorized)"
+          },
+          "403": {
+            "description": "Not allowed (user is not linked to teacher/student record)"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/projects/{id}/edit": {
+      "put": {
+        "summary": "Edit a project (multipart) - replace sjr_file/thumbnail and/or update fields",
+        "description": "Path param {id} is project documentId. Only project owner (teacher/student) can edit. If sjr_file is uploaded, project.sjr_file is replaced. Note: class-assignment snapshots (assigned_*) are not modified.",
+        "tags": ["project"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "l5oo1h6coklygtqn7tagpyna",
+              "description": "Project documentId"
+            },
+            "required": true,
+            "description": "Project documentId",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectEditMultipart"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectEditResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ValidationError (nothing to update / invalid payload)"
+          },
+          "401": {
+            "description": "Missing/invalid JWT (unauthorized)"
+          },
+          "403": {
+            "description": "Not allowed (not owner)"
+          },
+          "404": {
+            "description": "Project not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/class-assignments/assign": {
+      "post": {
+        "summary": "Teacher assigns 1..n teacher projects to 1 class",
+        "description": "Body contains class documentId and an array of teacher project documentIds. Server validates: class belongs to teacher, class is in active academic year, projects belong to teacher (owner_type=teacher). Server snapshots assigned_sjr_file/assigned_title/assigned_thumbnail at assign time so later project edits do not affect students.",
+        "tags": ["class-assignment"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassAssignmentAssignRequest"
+              },
+              "example": {
+                "class": "h17se30sf6d15ha6qlxz7hx7",
+                "projectIds": ["proj_doc_1", "proj_doc_2"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created/Existing class assignments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassAssignmentAssignResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ValidationError (invalid class/projectIds, no active AY, etc.)"
+          },
+          "401": {
+            "description": "Missing/invalid JWT (unauthorized)"
+          },
+          "403": {
+            "description": "Not allowed (not a teacher, tenant mismatch, etc.)"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/class-assignments/my": {
+      "get": {
+        "summary": "Teacher lists class assignments they created",
+        "description": "Optional query: ?class=<classDocumentId> to filter. Supports pagination via pagination[page] & pagination[pageSize]. Returns snapshot fields assigned_* to show what was assigned at the time.",
+        "tags": ["class-assignment"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "h17se30sf6d15ha6qlxz7hx7",
+              "description": "Optional class documentId filter"
+            },
+            "required": false,
+            "description": "Optional class documentId filter",
+            "name": "class",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "example": 1,
+              "description": "Page number (>=1). Default 1."
+            },
+            "required": false,
+            "description": "Page number (>=1). Default 1.",
+            "name": "pagination[page]",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "example": 10,
+              "description": "Items per page (1..100). Default 10."
+            },
+            "required": false,
+            "description": "Items per page (1..100). Default 10.",
+            "name": "pagination[pageSize]",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyClassAssignmentsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid JWT (unauthorized)"
+          },
+          "403": {
+            "description": "Not allowed (not a teacher)"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/class-assignments/for-student": {
+      "get": {
+        "summary": "Student lists assignments for their class",
+        "description": "Returns class assignments where class = student's current class. Student must use assigned_sjr_file (snapshot) instead of project.sjr_file. Supports pagination via pagination[page] & pagination[pageSize].",
+        "tags": ["class-assignment"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "example": 1,
+              "description": "Page number (>=1). Default 1."
+            },
+            "required": false,
+            "description": "Page number (>=1). Default 1.",
+            "name": "pagination[page]",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "example": 10,
+              "description": "Items per page (1..100). Default 10."
+            },
+            "required": false,
+            "description": "Items per page (1..100). Default 10.",
+            "name": "pagination[pageSize]",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentClassAssignmentsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Student has no class"
+          },
+          "401": {
+            "description": "Missing/invalid JWT (unauthorized)"
+          },
+          "403": {
+            "description": "Not allowed (not a student)"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/class-assignments/{id}/submit": {
+      "post": {
+        "summary": "Student submits a project to a class assignment",
+        "description": "Path param {id} is class-assignment documentId. Body contains student project documentId. Server validates class membership and project ownership (owner_type=student). Upserts submission by (student + class_assignment).",
+        "tags": ["class-assignment"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "ca_doc_123",
+              "description": "class-assignment documentId"
+            },
+            "required": true,
+            "description": "class-assignment documentId",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassAssignmentSubmitRequest"
+              },
+              "example": {
+                "project": "student_project_doc_123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created/updated submission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassAssignmentSubmitResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ValidationError (missing params/body, student has no class, invalid project, etc.)"
+          },
+          "401": {
+            "description": "Missing/invalid JWT (unauthorized)"
+          },
+          "403": {
+            "description": "Not allowed (not in class, not student, etc.)"
+          },
+          "404": {
+            "description": "Class assignment not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UserSafe": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 10,
+            "description": "User id"
+          },
+          "documentId": {
+            "type": "string",
+            "maxLength": 64,
+            "example": "s7p63bl9yuju6nzc1t53pvxf",
+            "description": "User documentId"
+          },
+          "username": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "student_xxx@local.invalid"
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "format": "email",
+            "example": "student_xxx@local.invalid"
+          },
+          "provider": {
+            "type": ["string", "null"],
+            "example": "local"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "example": true
+          },
+          "blocked": {
+            "type": "boolean",
+            "example": false
+          },
+          "phone": {
+            "type": ["string", "null"],
+            "example": null
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-01-07T07:25:43.755Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-01-07T07:25:43.755Z"
+          },
+          "publishedAt": {
+            "type": ["string", "null"],
+            "example": "2026-01-07T07:25:43.756Z"
+          },
+          "locale": {
+            "type": ["string", "null"],
+            "example": null
+          }
+        },
+        "required": ["id", "documentId", "username", "email", "confirmed", "blocked"],
+        "additionalProperties": {}
+      },
+      "TeacherLoginByPasscodeRequest": {
+        "type": "object",
+        "properties": {
+          "passcode": {
+            "type": "string",
+            "maxLength": 6,
+            "pattern": "^\\d{6}$",
+            "description": "6-digit passcode",
+            "example": "123456"
+          }
+        },
+        "required": ["passcode"],
+        "additionalProperties": false
+      },
+      "TeacherLoginTeacher": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 34,
+            "description": "Teacher internal numeric id"
+          },
+          "documentId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "description": "Teacher documentId (UUID)"
+          },
+          "name": {
+            "type": ["string", "null"],
+            "maxLength": 255,
+            "example": "Nguyen Van A",
+            "description": "Teacher name"
+          },
+          "passcode": {
+            "type": ["string", "null"],
+            "maxLength": 6,
+            "example": "123456",
+            "description": "6-digit passcode"
+          }
+        },
+        "required": ["id", "documentId"],
+        "additionalProperties": {}
+      },
+      "TeacherLoginByPasscodeResponse": {
+        "type": "object",
+        "properties": {
+          "jwt": {
+            "type": "string",
+            "example": "eyJhbGciOi...",
+            "description": "JWT token"
+          },
+          "teacher": {
+            "$ref": "#/components/schemas/TeacherLoginTeacher"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserSafe"
+          }
+        },
+        "required": ["jwt", "teacher", "user"],
+        "additionalProperties": false
+      },
+      "TeacherStudentPresenceStatus": {
+        "type": "string",
+        "enum": ["online", "offline", "unknown"],
+        "description": "Presence computed from last_seen_age_seconds",
+        "example": "online"
+      },
+      "TeacherStudentPresenceItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 26
+          },
+          "documentId": {
+            "type": "string",
+            "maxLength": 64,
+            "example": "oqvag31avils00sje3703l7f"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "my full name 211"
+          },
+          "name_kana": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "フリガナ"
+          },
+          "last_seen_at": {
+            "type": ["string", "null"],
+            "format": "date-time",
+            "example": "2026-01-21T02:02:25.361Z",
+            "description": "UTC timestamp"
+          },
+          "last_seen_age_seconds": {
+            "type": ["integer", "null"],
+            "example": 2,
+            "description": "Seconds since last_seen_at (server computed)"
+          },
+          "presence_status": {
+            "$ref": "#/components/schemas/TeacherStudentPresenceStatus"
+          }
+        },
+        "required": [
+          "id",
+          "documentId",
+          "name",
+          "name_kana",
+          "last_seen_at",
+          "last_seen_age_seconds",
+          "presence_status"
+        ],
+        "additionalProperties": false
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "example": 1,
+            "description": "Current page (1-based)."
+          },
+          "pageSize": {
+            "type": "integer",
+            "example": 10,
+            "description": "Items per page."
+          },
+          "pageCount": {
+            "type": "integer",
+            "example": 3,
+            "description": "Total number of pages."
+          },
+          "total": {
+            "type": "integer",
+            "example": 55,
+            "description": "Total number of items."
+          }
+        },
+        "required": ["page", "pageSize", "pageCount", "total"],
+        "additionalProperties": false
+      },
+      "TeacherClassStudentsPresenceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeacherStudentPresenceItem"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "server_time": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2026-01-21T09:02:28.122Z",
+                "description": "Server time (UTC)"
+              },
+              "presence": {
+                "type": "object",
+                "properties": {
+                  "online_threshold_seconds": {
+                    "type": "integer",
+                    "example": 120
+                  },
+                  "online_count": {
+                    "type": "integer",
+                    "example": 1,
+                    "description": "Online students in the whole class (not paginated)"
+                  },
+                  "total_count": {
+                    "type": "integer",
+                    "example": 3,
+                    "description": "Total students in the whole class (not paginated)"
+                  }
+                },
+                "required": ["online_threshold_seconds", "online_count", "total_count"],
+                "additionalProperties": false
+              },
+              "pagination": {
+                "$ref": "#/components/schemas/Pagination"
+              },
+              "class": {
+                "type": "object",
+                "properties": {
+                  "documentId": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "example": "zig0ji0e5a40vw9uxo1m19e2"
+                  },
+                  "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "class 10"
+                  }
+                },
+                "required": ["documentId", "name"],
+                "additionalProperties": false
+              }
+            },
+            "required": ["server_time", "presence", "pagination", "class"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["data", "meta"],
+        "additionalProperties": false
+      },
+      "StudentLoginByQrRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "QR token (preferred field name)",
+            "example": "a5b5750df98fdb069fb70dc556d70813"
+          },
+          "qr_token": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "QR token (legacy field name)",
+            "example": "a5b5750df98fdb069fb70dc556d70813"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StudentLoginStudent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 26
+          },
+          "documentId": {
+            "type": "string",
+            "maxLength": 64,
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "my full name"
+          },
+          "name_kana": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "フリガナ"
+          },
+          "qr_token": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "a5b5750df98fdb069fb70dc556d70813"
+          },
+          "users_permissions_user": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserSafe"
+              },
+              {
+                "description": "Linked user (safe subset)"
+              }
+            ]
+          },
+          "school_admin": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "documentId": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": ["id", "documentId", "name"],
+            "description": "Tenant school admin"
+          },
+          "class": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "documentId": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": ["id", "documentId", "name"],
+            "description": "Student class (can be null)"
+          }
+        },
+        "required": [
+          "id",
+          "documentId",
+          "name",
+          "name_kana",
+          "qr_token",
+          "users_permissions_user",
+          "school_admin"
+        ],
+        "additionalProperties": {}
+      },
+      "StudentLoginByQrResponse": {
+        "type": "object",
+        "properties": {
+          "jwt": {
+            "type": "string",
+            "example": "eyJhbGciOi...",
+            "description": "JWT token"
+          },
+          "student": {
+            "$ref": "#/components/schemas/StudentLoginStudent"
+          }
+        },
+        "required": ["jwt", "student"],
+        "additionalProperties": false
+      },
+      "StudentMarkSeenRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["online", "offline"],
+            "description": "Optional presence hint. If omitted, defaults to \"online\". Use \"offline\" when app is backgrounded/logged out (best-effort).",
+            "example": "online"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StudentMarkSeenResponse": {
+        "type": "object",
+        "properties": {
+          "updated": {
+            "type": "boolean",
+            "description": "True if last_seen_at was updated in DB; false if throttled (e.g. called within 30s window). For status=\"offline\", usually true.",
+            "example": true
+          },
+          "status": {
+            "type": "string",
+            "enum": ["online", "offline"],
+            "description": "Effective status processed by server.",
+            "example": "online"
+          }
+        },
+        "required": ["updated", "status"],
+        "additionalProperties": false
+      },
+      "MetaWithPagination": {
+        "type": "object",
+        "properties": {
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        },
+        "required": ["pagination"],
+        "additionalProperties": false
+      },
+      "ClassMyAcademicYear": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 12,
+            "description": "AcademicYear internal numeric id"
+          },
+          "documentId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "description": "AcademicYear documentId (UUID)"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "2025年度",
+            "description": "AcademicYear name"
+          }
+        },
+        "required": ["id", "documentId", "name"],
+        "additionalProperties": {}
+      },
+      "ClassMyItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 101,
+            "description": "Class internal numeric id"
+          },
+          "documentId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "description": "Class documentId (UUID)"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "Class A",
+            "description": "Class name"
+          },
+          "academic_year": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "example": 12,
+                "description": "AcademicYear internal numeric id"
+              },
+              "documentId": {
+                "type": "string",
+                "format": "uuid",
+                "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "description": "AcademicYear documentId (UUID)"
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 255,
+                "example": "2025年度",
+                "description": "AcademicYear name"
+              }
+            },
+            "required": ["id", "documentId", "name"],
+            "additionalProperties": {},
+            "description": "Related academic year (populated)."
+          },
+          "studentsCount": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 12,
+            "description": "Number of students currently assigned to this class"
+          }
+        },
+        "required": ["id", "documentId", "name", "studentsCount"],
+        "additionalProperties": {}
+      },
+      "ClassMyResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassMyItem"
+            },
+            "description": "Classes of the current teacher in the ACTIVE academic year only (paginated). If there is no active academic year, returns an empty array."
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaWithPagination"
+          }
+        },
+        "required": ["data", "meta"],
+        "additionalProperties": false
+      },
+      "ClassMyQuery": {
+        "type": "object",
+        "properties": {
+          "pagination[page]": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Page number (1-based). Default: 1",
+            "example": 1
+          },
+          "pagination[pageSize]": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "Items per page. Default: 10. Max: 100",
+            "example": 10
+          }
+        },
+        "additionalProperties": false,
+        "description": "Pagination params for infinite scroll. Use querystring format only: `?pagination[page]=1&pagination[pageSize]=10`."
+      },
+      "UploadFile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 15,
+            "description": "Upload file internal numeric id"
+          },
+          "documentId": {
+            "type": "string",
+            "example": "yable8qc4u3dzyk991x398ng",
+            "description": "Upload file documentId"
+          },
+          "name": {
+            "type": "string",
+            "example": "project.sjr",
+            "description": "Original file name"
+          },
+          "ext": {
+            "type": ["string", "null"],
+            "example": ".sjr",
+            "description": "File extension"
+          },
+          "mime": {
+            "type": ["string", "null"],
+            "example": "application/octet-stream",
+            "description": "MIME type"
+          },
+          "size": {
+            "type": "number",
+            "example": 12.49,
+            "description": "File size reported by upload plugin (often KB, may be float)"
+          },
+          "url": {
+            "type": "string",
+            "example": "http://localhost:4566/pionero-ste-strapi-dev/project_hash.sjr",
+            "description": "Public URL (built using baseUrl) or origin URL"
+          },
+          "provider": {
+            "type": "string",
+            "example": "@strapi/provider-upload-aws-s3",
+            "description": "Upload provider name"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "documentId", "name", "size", "url"],
+        "additionalProperties": {}
+      },
+      "ProjectOwnerType": {
+        "type": "string",
+        "enum": ["teacher", "student"],
+        "description": "Who owns the project"
+      },
+      "ProjectTeacher": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 136
+          },
+          "documentId": {
+            "type": "string",
+            "example": "xgwidpnpuhrcb9sjcbbswguf"
+          },
+          "name": {
+            "type": "string",
+            "example": "Name 3"
+          }
+        },
+        "required": ["id", "documentId", "name"],
+        "additionalProperties": {}
+      },
+      "ProjectStudent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 88
+          },
+          "documentId": {
+            "type": "string",
+            "example": "stu_doc_123"
+          },
+          "name": {
+            "type": "string",
+            "example": "Student A"
+          }
+        },
+        "required": ["id", "documentId", "name"],
+        "additionalProperties": {}
+      },
+      "ProjectItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 4,
+            "description": "Project internal numeric id"
+          },
+          "documentId": {
+            "type": "string",
+            "example": "l5oo1h6coklygtqn7tagpyna",
+            "description": "Project documentId"
+          },
+          "title": {
+            "type": "string",
+            "example": "title",
+            "description": "Project title"
+          },
+          "description": {
+            "type": ["string", "null"],
+            "example": null
+          },
+          "owner_type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProjectOwnerType"
+              },
+              {
+                "description": "teacher|student"
+              }
+            ]
+          },
+          "file_size": {
+            "type": ["integer", "null"],
+            "example": 12490,
+            "description": "File size in bytes (integer)."
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-01-14T03:56:51.917Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-01-14T03:56:51.917Z"
+          },
+          "publishedAt": {
+            "type": ["string", "null"]
+          },
+          "sjr_file": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UploadFile"
+              },
+              {
+                "description": "Uploaded .sjr file (media relation)"
+              }
+            ]
+          },
+          "thumbnail": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "example": 15,
+                "description": "Upload file internal numeric id"
+              },
+              "documentId": {
+                "type": "string",
+                "example": "yable8qc4u3dzyk991x398ng",
+                "description": "Upload file documentId"
+              },
+              "name": {
+                "type": "string",
+                "example": "project.sjr",
+                "description": "Original file name"
+              },
+              "ext": {
+                "type": ["string", "null"],
+                "example": ".sjr",
+                "description": "File extension"
+              },
+              "mime": {
+                "type": ["string", "null"],
+                "example": "application/octet-stream",
+                "description": "MIME type"
+              },
+              "size": {
+                "type": "number",
+                "example": 12.49,
+                "description": "File size reported by upload plugin (often KB, may be float)"
+              },
+              "url": {
+                "type": "string",
+                "example": "http://localhost:4566/pionero-ste-strapi-dev/project_hash.sjr",
+                "description": "Public URL (built using baseUrl) or origin URL"
+              },
+              "provider": {
+                "type": "string",
+                "example": "@strapi/provider-upload-aws-s3",
+                "description": "Upload provider name"
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string"
+              }
+            },
+            "required": ["id", "documentId", "name", "size", "url"],
+            "additionalProperties": {},
+            "description": "Thumbnail (optional)"
+          },
+          "teacher": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "example": 136
+              },
+              "documentId": {
+                "type": "string",
+                "example": "xgwidpnpuhrcb9sjcbbswguf"
+              },
+              "name": {
+                "type": "string",
+                "example": "Name 3"
+              }
+            },
+            "required": ["id", "documentId", "name"],
+            "additionalProperties": {},
+            "description": "Populated when owner_type=teacher"
+          },
+          "student": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "example": 88
+              },
+              "documentId": {
+                "type": "string",
+                "example": "stu_doc_123"
+              },
+              "name": {
+                "type": "string",
+                "example": "Student A"
+              }
+            },
+            "required": ["id", "documentId", "name"],
+            "additionalProperties": {},
+            "description": "Populated when owner_type=student"
+          }
+        },
+        "required": [
+          "id",
+          "documentId",
+          "title",
+          "owner_type",
+          "createdAt",
+          "updatedAt",
+          "sjr_file"
+        ],
+        "additionalProperties": {}
+      },
+      "ProjectUploadResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProjectItem"
+              },
+              {
+                "description": "Created project"
+              }
+            ]
+          }
+        },
+        "required": ["data"],
+        "additionalProperties": false
+      },
+      "ProjectEditResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProjectItem"
+              },
+              {
+                "description": "Updated project"
+              }
+            ]
+          }
+        },
+        "required": ["data"],
+        "additionalProperties": false
+      },
+      "ProjectsMyResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectItem"
+            },
+            "description": "List projects owned by current user (teacher or student)"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaWithPagination"
+          }
+        },
+        "required": ["data", "meta"],
+        "additionalProperties": false
+      },
+      "ProjectEditMultipart": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Updated title",
+            "description": "New project title (optional)"
+          },
+          "description": {
+            "type": "string",
+            "example": "Updated description",
+            "description": "New project description (optional)"
+          },
+          "sjr_file": {
+            "type": "string",
+            "format": "binary",
+            "description": ".sjr file (optional). If provided, replaces current sjr_file"
+          },
+          "thumbnail": {
+            "type": "string",
+            "format": "binary",
+            "description": "thumbnail (optional). If provided, replaces current thumbnail"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProjectUploadMultipart": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "My Scratch Project",
+            "description": "Project title"
+          },
+          "description": {
+            "type": "string",
+            "example": "optional description"
+          },
+          "sjr_file": {
+            "type": "string",
+            "format": "binary",
+            "description": ".sjr file (required)"
+          },
+          "thumbnail": {
+            "type": "string",
+            "format": "binary",
+            "description": "thumbnail (optional)"
+          }
+        },
+        "required": ["title"],
+        "additionalProperties": false
+      },
+      "UploadFile_CA": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 16
+          },
+          "documentId": {
+            "type": "string",
+            "example": "dzri6bxrhvp0zh67penppge0"
+          },
+          "name": {
+            "type": "string",
+            "example": "thumb.png"
+          },
+          "url": {
+            "type": "string",
+            "example": "http://localhost:4566/pionero-ste-strapi-dev/thumb.png"
+          },
+          "size": {
+            "type": "number",
+            "example": 0.81
+          }
+        },
+        "required": ["id", "documentId", "name", "url", "size"],
+        "additionalProperties": {}
+      },
+      "ClassLite": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 20
+          },
+          "documentId": {
+            "type": "string",
+            "example": "h17se30sf6d15ha6qlxz7hx7"
+          },
+          "name": {
+            "type": "string",
+            "example": "class 1"
+          }
+        },
+        "required": ["id", "documentId", "name"],
+        "additionalProperties": {}
+      },
+      "TeacherLite": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 136
+          },
+          "documentId": {
+            "type": "string",
+            "example": "xgwidpnpuhrcb9sjcbbswguf"
+          },
+          "name": {
+            "type": "string",
+            "example": "Name 3"
+          }
+        },
+        "required": ["id", "documentId", "name"],
+        "additionalProperties": {}
+      },
+      "ProjectLite": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 4
+          },
+          "documentId": {
+            "type": "string",
+            "example": "l5oo1h6coklygtqn7tagpyna"
+          },
+          "title": {
+            "type": "string",
+            "example": "Project Title"
+          },
+          "thumbnail": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "example": 16
+              },
+              "documentId": {
+                "type": "string",
+                "example": "dzri6bxrhvp0zh67penppge0"
+              },
+              "name": {
+                "type": "string",
+                "example": "thumb.png"
+              },
+              "url": {
+                "type": "string",
+                "example": "http://localhost:4566/pionero-ste-strapi-dev/thumb.png"
+              },
+              "size": {
+                "type": "number",
+                "example": 0.81
+              }
+            },
+            "required": ["id", "documentId", "name", "url", "size"],
+            "additionalProperties": {},
+            "description": "Project thumbnail (optional)"
+          },
+          "sjr_file": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "example": 16
+              },
+              "documentId": {
+                "type": "string",
+                "example": "dzri6bxrhvp0zh67penppge0"
+              },
+              "name": {
+                "type": "string",
+                "example": "thumb.png"
+              },
+              "url": {
+                "type": "string",
+                "example": "http://localhost:4566/pionero-ste-strapi-dev/thumb.png"
+              },
+              "size": {
+                "type": "number",
+                "example": 0.81
+              }
+            },
+            "required": ["id", "documentId", "name", "url", "size"],
+            "additionalProperties": {},
+            "description": "Project sjr file (optional populate). NOTE: students should use assigned_sjr_file from class-assignment (snapshot) instead."
+          }
+        },
+        "required": ["id", "documentId", "title"],
+        "additionalProperties": {}
+      },
+      "ClassAssignmentItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 101
+          },
+          "documentId": {
+            "type": "string",
+            "example": "ca_doc_123"
+          },
+          "assigned_at": {
+            "type": ["string", "null"],
+            "example": "2026-01-14T03:56:51.917Z"
+          },
+          "assigned_title": {
+            "type": ["string", "null"],
+            "example": "Project Title (snapshot)"
+          },
+          "assigned_sjr_file": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UploadFile_CA"
+              },
+              {
+                "description": "Snapshot sjr file at assign time (student must use this)"
+              }
+            ]
+          },
+          "assigned_thumbnail": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "example": 16
+              },
+              "documentId": {
+                "type": "string",
+                "example": "dzri6bxrhvp0zh67penppge0"
+              },
+              "name": {
+                "type": "string",
+                "example": "thumb.png"
+              },
+              "url": {
+                "type": "string",
+                "example": "http://localhost:4566/pionero-ste-strapi-dev/thumb.png"
+              },
+              "size": {
+                "type": "number",
+                "example": 0.81
+              }
+            },
+            "required": ["id", "documentId", "name", "url", "size"],
+            "additionalProperties": {},
+            "description": "Snapshot thumbnail at assign time (optional)"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "class": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClassLite"
+              },
+              {
+                "description": "Target class"
+              }
+            ]
+          },
+          "project": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProjectLite"
+              },
+              {
+                "description": "Source teacher project (may be edited later; student should not rely on project.sjr_file)"
+              }
+            ]
+          },
+          "teacher": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TeacherLite"
+              },
+              {
+                "description": "Assigning teacher (sometimes populated)"
+              }
+            ]
+          }
+        },
+        "required": ["id", "documentId", "assigned_sjr_file", "class", "project"],
+        "additionalProperties": {}
+      },
+      "ClassAssignmentItemStudent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 101
+          },
+          "documentId": {
+            "type": "string",
+            "example": "ca_doc_123"
+          },
+          "assigned_at": {
+            "type": ["string", "null"],
+            "example": "2026-02-04T09:25:23.198Z"
+          },
+          "assigned_title": {
+            "type": ["string", "null"],
+            "example": "Project Title (snapshot)"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "class": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClassLite"
+              },
+              {
+                "description": "Target class"
+              }
+            ]
+          },
+          "teacher": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TeacherLite"
+              },
+              {
+                "description": "Assigning teacher"
+              }
+            ]
+          },
+          "assigned_sjr_file": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UploadFile_CA"
+              },
+              {
+                "description": "Snapshot sjr file at assign time (student must use this)"
+              }
+            ]
+          },
+          "assigned_thumbnail": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "example": 16
+              },
+              "documentId": {
+                "type": "string",
+                "example": "dzri6bxrhvp0zh67penppge0"
+              },
+              "name": {
+                "type": "string",
+                "example": "thumb.png"
+              },
+              "url": {
+                "type": "string",
+                "example": "http://localhost:4566/pionero-ste-strapi-dev/thumb.png"
+              },
+              "size": {
+                "type": "number",
+                "example": 0.81
+              }
+            },
+            "required": ["id", "documentId", "name", "url", "size"],
+            "additionalProperties": {},
+            "description": "Snapshot thumbnail at assign time (optional)"
+          }
+        },
+        "required": ["id", "documentId", "class", "assigned_sjr_file"],
+        "additionalProperties": {}
+      },
+      "ClassAssignmentAssignRequest": {
+        "type": "object",
+        "properties": {
+          "class": {
+            "type": "string",
+            "example": "h17se30sf6d15ha6qlxz7hx7",
+            "description": "Class documentId"
+          },
+          "projectIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "example": ["proj_doc_1", "proj_doc_2"],
+            "description": "Teacher project documentIds"
+          }
+        },
+        "required": ["class", "projectIds"],
+        "additionalProperties": false
+      },
+      "ClassAssignmentAssignResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassAssignmentItem"
+            },
+            "description": "Created or existing class-assignment rows (duplicates skipped)"
+          }
+        },
+        "required": ["data"],
+        "additionalProperties": false
+      },
+      "MyClassAssignmentsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassAssignmentItem"
+            }
+          },
+          "meta": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MetaWithPagination"
+              },
+              {
+                "description": "Pagination info (Strapi-like)"
+              }
+            ]
+          }
+        },
+        "required": ["data", "meta"],
+        "additionalProperties": false
+      },
+      "StudentClassAssignmentsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassAssignmentItemStudent"
+            },
+            "description": "Assignments for student's current class (uses snapshot fields assigned_*)"
+          },
+          "meta": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MetaWithPagination"
+              },
+              {
+                "description": "Pagination info (Strapi-like)"
+              }
+            ]
+          }
+        },
+        "required": ["data", "meta"],
+        "additionalProperties": false
+      },
+      "ClassAssignmentSubmitRequest": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "example": "student_project_doc_123",
+            "description": "Student project documentId to submit"
+          }
+        },
+        "required": ["project"],
+        "additionalProperties": false
+      },
+      "AssignmentSubmissionItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 5001
+          },
+          "documentId": {
+            "type": "string",
+            "example": "sub_doc_abc"
+          },
+          "submitted_at": {
+            "type": ["string", "null"],
+            "example": "2026-01-14T03:56:51.917Z"
+          },
+          "student": {
+            "description": "Populated student (shape depends on your populate)"
+          },
+          "class_assignment": {
+            "description": "Populated class-assignment (optional; includes assigned_* snapshot fields)"
+          },
+          "project": {
+            "description": "Populated submitted project (optional)"
+          }
+        },
+        "required": ["id", "documentId"],
+        "additionalProperties": {}
+      },
+      "ClassAssignmentSubmitResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssignmentSubmissionItem"
+              },
+              {
+                "description": "Created or updated submission"
+              }
+            ]
+          }
+        },
+        "required": ["data"],
+        "additionalProperties": false
+      }
+    }
+  }
+}

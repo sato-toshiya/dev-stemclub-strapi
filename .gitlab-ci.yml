@@ -1,0 +1,84 @@
+stages: [build, deploy]
+
+build:be:
+  stage: build
+  image: node:20-alpine
+  tags: ['ste-strapi-staging']
+  variables:
+    HUSKY: '0'
+    NODE_OPTIONS: '--max_old_space_size=1536'
+
+  script:
+    - corepack enable
+    - yarn install --frozen-lockfile --prefer-offline
+    - yarn build
+    - |
+      tar -czf be-artifact.tgz \
+        package.json yarn.lock server.js \
+        config src public database scripts types \
+        assets \
+        dist
+
+  artifacts:
+    name: 'be-${CI_COMMIT_SHA}'
+    paths:
+      - be-artifact.tgz
+    expire_in: 7 days
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+deploy:be:staging:
+  stage: deploy
+  image: alpine:3.20
+  tags: ['ste-strapi-staging']
+  dependencies: ['build:be']
+  before_script:
+    - apk add --no-cache openssh-client rsync bash curl
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - cp "$STG_SSH_PRIVATE_KEY" ~/.ssh/id_rsa
+    - tr -d '\r' < ~/.ssh/id_rsa > ~/.ssh/id_rsa.tmp && mv ~/.ssh/id_rsa.tmp ~/.ssh/id_rsa
+    - awk 'NR==1{sub(/^\xef\xbb\xbf/,""); sub(/^[[:space:]]+/,"")} {print}' ~/.ssh/id_rsa > ~/.ssh/id_rsa.tmp && mv ~/.ssh/id_rsa.tmp ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+
+    - ssh-keygen -y -f ~/.ssh/id_rsa > ~/.ssh/id_rsa.pub
+    - echo "PUBKEY_FP=$(ssh-keygen -lf ~/.ssh/id_rsa.pub | awk '{print $2}')"
+
+    - ssh-keyscan -H "$STG_DEPLOY_HOST" >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+
+  script:
+    - set -e
+    - RELEASE="${CI_COMMIT_SHORT_SHA}"
+    - DEPLOY_PATH="${STG_STRAPI_DEPLOY_PATH:-/var/www/ste-strapi}"
+    - SSH="ssh -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=10 -i ~/.ssh/id_rsa"
+
+    - $SSH "${STG_DEPLOY_USER}@${STG_DEPLOY_HOST}" "whoami && hostname"
+
+    - $SSH "${STG_DEPLOY_USER}@${STG_DEPLOY_HOST}" "mkdir -p '${DEPLOY_PATH}/releases/${RELEASE}'"
+    - rsync -az -e "ssh -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=10 -i ~/.ssh/id_rsa" be-artifact.tgz "${STG_DEPLOY_USER}@${STG_DEPLOY_HOST}:${DEPLOY_PATH}/releases/${RELEASE}/"
+
+    - |
+      $SSH "${STG_DEPLOY_USER}@${STG_DEPLOY_HOST}" "set -e;
+      cd '${DEPLOY_PATH}/releases/${RELEASE}';
+      tar -xzf be-artifact.tgz;
+
+      test -f '${DEPLOY_PATH}/shared/.env';
+      ln -sfn '${DEPLOY_PATH}/shared/.env' .env;
+
+      corepack enable >/dev/null 2>&1 || true;
+      yarn install --frozen-lockfile --production=true;
+      echo \"[deploy] syncing users-permissions from code config\";
+      yarn permissions:sync;
+
+      ln -sfn '${DEPLOY_PATH}/releases/${RELEASE}' '${DEPLOY_PATH}/current';
+      pm2 start '${DEPLOY_PATH}/ecosystem.config.js' --update-env -f;
+
+      ls -1dt '${DEPLOY_PATH}/releases/'* | tail -n +6 | xargs -r rm -rf;
+
+      "
+
+  environment:
+    name: staging
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'

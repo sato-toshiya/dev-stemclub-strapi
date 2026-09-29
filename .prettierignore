@@ -1,0 +1,11 @@
+node_modules
+dist
+build
+.cache
+.tmp
+coverage
+*.log
+yarn.lock
+package-lock.json
+.DS_Store
+

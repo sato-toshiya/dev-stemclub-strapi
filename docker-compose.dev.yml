@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ste-strapi-db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - strapi-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DATABASE_USERNAME}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: ste-localstack
+    restart: unless-stopped
+    environment:
+      - SERVICES=s3
+      - DEFAULT_REGION=ap-northeast-1
+      - EDGE_PORT=4566
+    ports:
+      - '4566:4566'
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - ./localstack/init:/etc/localstack/init/ready.d
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - strapi-network
+
+  # strapi:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     target: development
+  #   container_name: ste-strapi-dev
+  #   restart: unless-stopped
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     # Ensure Strapi points to the Postgres service rather than localhost
+  #     DATABASE_HOST: postgres
+  #     DATABASE_NAME: ${DATABASE_NAME}
+  #     DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+  #     DATABASE_USERNAME: ${DATABASE_USERNAME}
+
+  #   ports:
+  #     - '1337:1337'
+  #   volumes:
+  #     # Mount source code for hot reload
+  #     - .:/app
+  #     - /app/node_modules
+  #     - /app/.tmp
+  #     # Persist uploads
+  #     - ./public/uploads:/app/public/uploads
+  #   networks:
+  #     - strapi-network
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+
+volumes:
+  postgres-data:
+  localstack-data:
+networks:
+  strapi-network:
+    driver: bridge
